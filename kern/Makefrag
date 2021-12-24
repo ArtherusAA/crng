@@ -37,6 +37,9 @@ KERN_SRCFILES := kern/bootstrap.S \
 			kern/uefiasm.S \
 			kern/spinlock.c
 
+KERN_SRCFILES += lib/rdrand.S
+KERN_SRCFILES += lib/crng.c
+
 ifeq ($(CONFIG_KSPACE),y)
 KERN_SRCFILES += kern/alloc.c
 endif
@@ -163,6 +166,12 @@ $(OBJDIR)/kern/%.o: kern/%.c $(OBJDIR)/.vars.KERN_CFLAGS
 	@echo + cc $<
 	@mkdir -p $(@D)
 	$(V)$(CC) $(KERN_CFLAGS) $(KERN_SAN_CFLAGS) -c -o $@ $<
+
+$(OBJDIR)/kern/rdrand.o: lib/rdrand.S
+	@echo + nasm $<
+	@mkdir -p $(@D)
+	$(V)nasm  -f elf64 -o $@ $<
+
 
 $(OBJDIR)/kern/%.o: kern/%.S $(OBJDIR)/.vars.KERN_CFLAGS
 	@echo + as $<

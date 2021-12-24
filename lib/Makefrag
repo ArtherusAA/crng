@@ -15,6 +15,8 @@ LIB_SRCFILES +=		lib/random.c \
 			lib/random_data.c
 endif
 
+LIB_SRCFILES += lib/crng.c
+
 LIB_SRCFILES :=		$(LIB_SRCFILES) \
 			lib/pgfault.c \
 			lib/pfentry.S \

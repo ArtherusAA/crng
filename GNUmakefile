@@ -305,6 +305,10 @@ IMAGES = $(OVMF_FIRMWARE) $(JOS_LOADER) $(OBJDIR)/kern/kernel $(JOS_ESP)/EFI/BOO
 QEMUOPTS += -bios $(OVMF_FIRMWARE)
 # QEMUOPTS += -debugcon file:$(UEFIDIR)/debug.log -global isa-debugcon.iobase=0x402
 
+ifdef RDRAND
+QEMUOPTS += -cpu Broadwell
+endif
+
 define POST_CHECKOUT
 #!/bin/sh -x
 make clean

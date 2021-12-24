@@ -7,6 +7,7 @@
 #include <inc/assert.h>
 #include <inc/env.h>
 #include <inc/x86.h>
+#include <inc/crng.h>
 
 #include <kern/console.h>
 #include <kern/monitor.h>
@@ -32,6 +33,7 @@ int mon_frequency(int argc, char **argv, struct Trapframe *tf);
 int mon_memory(int argc, char **argv, struct Trapframe *tf);
 int mon_pagetable(int argc, char **argv, struct Trapframe *tf);
 int mon_virt(int argc, char **argv, struct Trapframe *tf);
+int mon_crng(int argc, char **argv, struct Trapframe *tf);
 
 struct Command {
     const char *name;
@@ -50,7 +52,8 @@ static struct Command commands[] = {
         {"timer_freq", "Run timer_cpu_frequency", mon_frequency},
         {"memory", "Dump memory lists", mon_memory},
         {"virtual_memory", "Dump virtual tree", mon_virt},
-        {"page_table", "Dump page table", mon_pagetable}
+        {"page_table", "Dump page table", mon_pagetable},
+        {"crng", "Print random unsinged integer", mon_crng}
 };
 #define NCOMMANDS (sizeof(commands) / sizeof(commands[0]))
 
@@ -167,6 +170,13 @@ mon_pagetable(int argc, char **argv, struct Trapframe *tf) {
     dump_page_table(kspace.pml4);
     return 0;
 }
+
+int
+mon_crng(int argc, char **argv, struct Trapframe *tf) {
+    cprintf("%ld\n", secure_rand64_rdrand());
+    return 0;
+}
+
 /* Kernel monitor command interpreter */
 
 static int
