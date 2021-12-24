@@ -20,9 +20,4 @@ int32_t secure_rand32_doom(void);
 uint64_t secure_urand64_doom(void);
 uint32_t secure_urand32_doom(void);
 
-
-uint64_t get_entropy_rdrand(void);
-uint64_t get_entropy_doom(void);
-
-
 #endif // OSCOURSE_CRNG_H

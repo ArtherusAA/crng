@@ -34,6 +34,7 @@ int mon_memory(int argc, char **argv, struct Trapframe *tf);
 int mon_pagetable(int argc, char **argv, struct Trapframe *tf);
 int mon_virt(int argc, char **argv, struct Trapframe *tf);
 int mon_crng(int argc, char **argv, struct Trapframe *tf);
+int mon_crng_doom(int argc, char **argv, struct Trapframe *tf);
 
 struct Command {
     const char *name;
@@ -53,7 +54,8 @@ static struct Command commands[] = {
         {"memory", "Dump memory lists", mon_memory},
         {"virtual_memory", "Dump virtual tree", mon_virt},
         {"page_table", "Dump page table", mon_pagetable},
-        {"crng", "Print random unsinged integer", mon_crng}
+        {"crng", "Print random unsinged integer", mon_crng},
+        {"crng_doom", "Print pseudo-random unsinged integer", mon_crng_doom}
 };
 #define NCOMMANDS (sizeof(commands) / sizeof(commands[0]))
 
@@ -174,6 +176,12 @@ mon_pagetable(int argc, char **argv, struct Trapframe *tf) {
 int
 mon_crng(int argc, char **argv, struct Trapframe *tf) {
     cprintf("%ld\n", secure_rand64_rdrand());
+    return 0;
+}
+
+int
+mon_crng_doom(int argc, char **argv, struct Trapframe *tf) {
+    cprintf("%lu\n", secure_urand64_doom());
     return 0;
 }
 
