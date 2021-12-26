@@ -39,6 +39,8 @@ KERN_SRCFILES := kern/bootstrap.S \
 
 KERN_SRCFILES += lib/rdrand.S
 KERN_SRCFILES += lib/crng.c
+KERN_SRCFILES += lib/nist.c
+                                                                                                                                                         
 
 ifeq ($(CONFIG_KSPACE),y)
 KERN_SRCFILES += kern/alloc.c

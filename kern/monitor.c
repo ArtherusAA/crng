@@ -8,6 +8,7 @@
 #include <inc/env.h>
 #include <inc/x86.h>
 #include <inc/crng.h>
+#include <inc/nist.h>
 
 #include <kern/console.h>
 #include <kern/monitor.h>
@@ -35,6 +36,7 @@ int mon_pagetable(int argc, char **argv, struct Trapframe *tf);
 int mon_virt(int argc, char **argv, struct Trapframe *tf);
 int mon_crng(int argc, char **argv, struct Trapframe *tf);
 int mon_crng_doom(int argc, char **argv, struct Trapframe *tf);
+int mon_crng_test(int argc, char **argv, struct Trapframe *tf);
 
 struct Command {
     const char *name;
@@ -55,7 +57,8 @@ static struct Command commands[] = {
         {"virtual_memory", "Dump virtual tree", mon_virt},
         {"page_table", "Dump page table", mon_pagetable},
         {"crng", "Print random unsinged integer", mon_crng},
-        {"crng_doom", "Print pseudo-random unsinged integer", mon_crng_doom}
+        {"crng_doom", "Print pseudo-random unsinged integer", mon_crng_doom},
+        {"crng_test", "Test crng", mon_crng_test}
 };
 #define NCOMMANDS (sizeof(commands) / sizeof(commands[0]))
 
@@ -146,6 +149,13 @@ int mon_frequency(int argc, char **argv, struct Trapframe *tf) {
         return 1;
     }
     timer_cpu_frequency(argv[1]);
+    return 0;
+}
+
+int mon_crng_test(int argc, char **argv, struct Trapframe *tf) {
+    //cprintf("%d", frequency_test(100));
+    //float x = 1., y = 3.;
+    cprintf("%f %f\n", 0.01, 1.92);
     return 0;
 }
 
