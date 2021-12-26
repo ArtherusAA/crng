@@ -35,6 +35,7 @@ int mon_pagetable(int argc, char **argv, struct Trapframe *tf);
 int mon_virt(int argc, char **argv, struct Trapframe *tf);
 int mon_crng(int argc, char **argv, struct Trapframe *tf);
 int mon_crng_doom(int argc, char **argv, struct Trapframe *tf);
+int mon_test_crng(int argc, char **argv, struct Trapframe *tf);
 
 struct Command {
     const char *name;
@@ -55,7 +56,8 @@ static struct Command commands[] = {
         {"virtual_memory", "Dump virtual tree", mon_virt},
         {"page_table", "Dump page table", mon_pagetable},
         {"crng", "Print random unsinged integer", mon_crng},
-        {"crng_doom", "Print pseudo-random unsinged integer", mon_crng_doom}
+        {"crng_doom", "Print pseudo-random unsinged integer", mon_crng_doom},
+        {"test_crng", "Run NIST tests", mon_test_crng}
 };
 #define NCOMMANDS (sizeof(commands) / sizeof(commands[0]))
 
@@ -182,6 +184,22 @@ mon_crng(int argc, char **argv, struct Trapframe *tf) {
 int
 mon_crng_doom(int argc, char **argv, struct Trapframe *tf) {
     cprintf("%lu\n", secure_urand64_doom());
+    return 0;
+}
+
+int 
+mon_test_crng(int argc, char **argv, struct Trapframe *tf) {
+    double x = 0.1, y = 0.2;
+    if (argc > 2) {
+        x = strtol(argv[1], NULL, 10);
+        y = strtol(argv[2], NULL, 10);
+    }
+    x *= y;
+    x += 0.2;
+    if (x > 3.1) {
+        cprintf("yay\n");
+    }
+    cprintf("test %d %f\n", 1, x);
     return 0;
 }
 
