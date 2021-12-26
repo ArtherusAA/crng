@@ -17,6 +17,8 @@ endif
 
 LIB_SRCFILES += lib/crng.c
 
+LIB_SRCFILES += lib/rand_isaac.c
+
 LIB_SRCFILES :=		$(LIB_SRCFILES) \
 			lib/pgfault.c \
 			lib/pfentry.S \

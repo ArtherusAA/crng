@@ -3,6 +3,7 @@
 //
 #define bool _Bool
 #include <stdint.h>
+#include <inc/rand_isaac.h>
 #include <inc/crng.h>
 
 #define ENTROPY_SEED 100
@@ -17,36 +18,40 @@ extern bool InternalX86RdRand64(uint64_t *Rand);
 uint64_t make_entropy_doom();
 void get_prime_numbers(uint32_t *first, uint32_t *second);
 
-int64_t secure_rand64_rdrand(void) {
-    int64_t res;
-    if (!InternalX86RdRand64((uint64_t *)(&res))) {
-        return secure_rand64_doom();
+struct isaac_state isaac_state;
+bool isaac_initialized = 0;
+
+void initialize_isaac(void) {
+    uint64_t res;
+    for (int i = 0; i < ISAAC_WORDS; i++) {
+        if (!InternalX86RdRand64(&res)) {
+            res = secure_urand64_doom();
+        }
+        isaac_state.m[i] = res; 
     }
-    return res;
+    isaac_seed(&isaac_state);
+    isaac_initialized = 1;
+}
+
+int64_t secure_rand64_rdrand(void) {
+    return (int64_t)secure_urand64_rdrand();
 }
 
 int32_t secure_rand32_rdrand(void) {
-    int32_t res;
-    if (!InternalX86RdRand32((uint32_t *)(&res))) {
-        return secure_rand32_doom();
-    }
-    return res;
+    return (int32_t)secure_urand32_rdrand();
 }
 
 uint64_t secure_urand64_rdrand(void) {
-    uint64_t res;
-    if (!InternalX86RdRand64(&res)) {
-        return secure_urand64_doom();
+    isaac_word arr[ISAAC_WORDS];
+    if (!isaac_initialized) {
+        initialize_isaac();
     }
-    return res;
+    isaac_refill(&isaac_state, arr);
+    return arr[0];
 }
 
 uint32_t secure_urand32_rdrand(void) {
-    uint32_t res;
-    if (!InternalX86RdRand32(&res)) {
-        return secure_urand32_doom();
-    }
-    return res;
+    return (uint32_t)secure_urand64_rdrand();
 }
 
 uint64_t secure_urand64_doom(void) {
