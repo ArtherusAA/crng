@@ -17,6 +17,7 @@ endif
 
 LIB_SRCFILES += lib/crng.c
 LIB_SRCFILES += lib/nist.c
+LIB_SRCFILES += lib/math.c
 
 LIB_SRCFILES :=		$(LIB_SRCFILES) \
 			lib/pgfault.c \

@@ -153,9 +153,15 @@ int mon_frequency(int argc, char **argv, struct Trapframe *tf) {
 }
 
 int mon_crng_test(int argc, char **argv, struct Trapframe *tf) {
-    //cprintf("%d", frequency_test(100));
-    //float x = 1., y = 3.;
-    cprintf("%f %f\n", 0.01, 1.92);
+    cprintf("Freq test:\n");
+    for (int i = 1; i <= 100; i++) {
+        cprintf("test %d...", i);
+        if (frequency_test(1000)) {
+            cprintf("OK\n");
+        } else {
+            cprintf("not OK\n");
+        }
+    }
     return 0;
 }
 
