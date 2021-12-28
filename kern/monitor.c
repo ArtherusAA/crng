@@ -153,8 +153,21 @@ int mon_frequency(int argc, char **argv, struct Trapframe *tf) {
 }
 
 int mon_crng_test(int argc, char **argv, struct Trapframe *tf) {
+    uint64_t (*tested_function)() = secure_urand64_rdrand;
     int tests_size = 100, count = 0;
     unsigned n = 1000, M = 100;
+    if (argc < 2) {
+        cprintf("No tested function specified, leave by default: secure_urand64_rdrand\n");
+    } else if (!strcmp(argv[1], "rdrand")) {
+        tested_function = secure_urand64_rdrand;
+        cprintf("Testing CPRNG with hardware entropy(n size: %u, M size: %u):\n", n, M);
+    } else if (!strcmp(argv[1], "doom")) {
+        tested_function = secure_urand64_doom;
+        cprintf("Testing CPRNG with fake entropy(n size: %u, M size: %u):\n", n, M);
+    } else {
+        cprintf("Unknown function, terminate testing\n");
+        return 1;
+    }
     bool (*test_function[4])(unsigned, unsigned, uint64_t (*)()) = {
         frequency_test,
         frequency_block_test,
@@ -167,11 +180,10 @@ int mon_crng_test(int argc, char **argv, struct Trapframe *tf) {
         "Runs test",
         "Longest run of ones test"
     };
-    cprintf("Testing CPRNG with fake entropy(n size: %u, M size: %u):\n", n, M);
     for (int test_count = 0; test_count < sizeof(test_function) / sizeof(test_function[0]); test_count++) {
         cprintf("-%s:\n--Testing", test_function_name[test_count]);
         for (int i = 1; i <= tests_size; i++) {
-            if (test_function[test_count](n, M, secure_urand64_doom)) {
+            if (test_function[test_count](n, M, tested_function)) {
                 count += 1;
             }
             if (i % (tests_size / 10) == 0) {
