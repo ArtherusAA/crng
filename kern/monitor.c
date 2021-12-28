@@ -153,14 +153,33 @@ int mon_frequency(int argc, char **argv, struct Trapframe *tf) {
 }
 
 int mon_crng_test(int argc, char **argv, struct Trapframe *tf) {
-    cprintf("Freq test:\n");
-    for (int i = 1; i <= 100; i++) {
-        cprintf("test %d...", i);
-        if (frequency_test(1000)) {
-            cprintf("OK\n");
-        } else {
-            cprintf("not OK\n");
+    int tests_size = 100, count = 0;
+    unsigned n = 1000, M = 100;
+    bool (*test_function[4])(unsigned, unsigned, uint64_t (*)()) = {
+        frequency_test,
+        frequency_block_test,
+        runs_test,
+        longest_run_of_ones_test
+    };
+    const char *test_function_name[] = {
+        "Frequency test",
+        "Frequency block test",
+        "Runs test",
+        "Longest run of ones test"
+    };
+    cprintf("Testing CPRNG with fake entropy(n size: %u, M size: %u):\n", n, M);
+    for (int test_count = 0; test_count < sizeof(test_function) / sizeof(test_function[0]); test_count++) {
+        cprintf("-%s:\n--Testing", test_function_name[test_count]);
+        for (int i = 1; i <= tests_size; i++) {
+            if (test_function[test_count](n, M, secure_urand64_doom)) {
+                count += 1;
+            }
+            if (i % (tests_size / 10) == 0) {
+                cprintf(".");
+            }
         }
+        cprintf("OK\n--Result: %d/%d tests passed\n", count, tests_size);
+        count = 0;
     }
     return 0;
 }

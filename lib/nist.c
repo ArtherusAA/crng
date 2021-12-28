@@ -6,11 +6,11 @@
 #define sqrt_2 1.41421356237
 #define int64_size 64
 
-bool frequency_test(unsigned n) {
+bool frequency_test(unsigned n, unsigned not_used, uint64_t (*rand_func)()) {
     unsigned iteration_count = n / int64_size + 1;
     int S_n = 0;
     for (unsigned i = 0; i < iteration_count; i++) {
-        uint64_t sequence = secure_urand64_doom();
+        uint64_t sequence = rand_func();
         for (unsigned j = 0; j < int64_size; j++) {
             unsigned char bit = sequence & 1;
             if ( bit ) {
@@ -33,16 +33,16 @@ bool frequency_test(unsigned n) {
     return res >= 0.01 ? true : false;
 }
 
-bool frequency_block_test(unsigned n, unsigned M) {
+bool frequency_block_test(unsigned n, unsigned M, uint64_t (*rand_func)()) {
     unsigned block_quantity = n / M;
     double ksi_2 = 0;
     for (unsigned block_count = 0; block_count < block_quantity; block_count++) {
         unsigned bit_count = 0;
         double pi_i = 0;
-        uint64_t sequence = secure_urand64_doom();
+        uint64_t sequence = rand_func();
         while (bit_count < M) {
             if (bit_count % int64_size == 0) {
-                sequence = secure_urand64_doom();
+                sequence = rand_func();
             }
             unsigned char bit = sequence & 1;
             sequence = sequence >> 1;
@@ -60,14 +60,14 @@ bool frequency_block_test(unsigned n, unsigned M) {
     return res > 0.01 ? true : false;
 }
 
-bool runs_test(unsigned n) {
+bool runs_test(unsigned n, unsigned not_used, uint64_t (*rand_func)()) {
     unsigned iteration_count = n / int64_size + 1;
     unsigned V_n = 1;
     double _pi = 0;
     unsigned char prev_bit;
     char first_time = 1;
     for (unsigned i = 0; i < iteration_count; i++) {
-        uint64_t sequence = secure_urand64_doom();
+        uint64_t sequence = rand_func();
         for (unsigned j = 0; j < int64_size; j++) {
             unsigned char bit = sequence & 1;
             if ( bit ) {
@@ -100,7 +100,7 @@ bool runs_test(unsigned n) {
     return ret >= 0.01 ? true : false;
 }
 
-bool longest_run_of_ones_test(unsigned n, unsigned M) {
+bool longest_run_of_ones_test(unsigned n, unsigned M, uint64_t (*rand_func)()) {
     unsigned v[] = {0, 0, 0, 0, 0, 0};
     double probabilities[] = {0.2148, 0.3672, 0.2305, 0.1875, 0, 0};
     unsigned N = n / M, K = 3;
@@ -113,10 +113,10 @@ bool longest_run_of_ones_test(unsigned n, unsigned M) {
 
     for (unsigned block_count = 0; block_count < N; block_count++) {
         unsigned bit_count = 0, curr_len = 0, max_len = 0;
-        uint64_t sequence = secure_urand64_doom();
+        uint64_t sequence = rand_func();
         while (bit_count < M) {
             if (bit_count % int64_size == 0) {
-                sequence = secure_urand64_doom();
+                sequence = rand_func();
             }
             unsigned char bit = sequence & 1;
 
