@@ -39,6 +39,8 @@ KERN_SRCFILES := kern/bootstrap.S \
 
 KERN_SRCFILES += lib/rdrand.S
 KERN_SRCFILES += lib/crng.c
+KERN_SRCFILES += lib/nist.c
+KERN_SRCFILES += lib/math.c                                                                                                                                                 
 
 KERN_SRCFILES += lib/rand_isaac.c
 

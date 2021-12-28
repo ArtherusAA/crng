@@ -8,10 +8,6 @@
 
 #define ENTROPY_SEED 100
 #define PRIME_SIZE 1000000
-#define pi 3.14159265359
-#define sqrt_pi 1.77245385091
-#define sqrt_2 1.41421356237
-#define OK 1
 
 extern bool InternalX86RdRand32(uint32_t *Rand); 
 extern bool InternalX86RdRand64(uint64_t *Rand);
