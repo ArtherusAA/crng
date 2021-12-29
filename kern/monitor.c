@@ -224,7 +224,7 @@ mon_pagetable(int argc, char **argv, struct Trapframe *tf) {
 
 int
 mon_crng(int argc, char **argv, struct Trapframe *tf) {
-    cprintf("%ld\n", secure_rand64_rdrand());
+    cprintf("%lu\n", secure_urand64_rdrand());
     return 0;
 }
 

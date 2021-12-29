@@ -18,23 +18,23 @@ struct isaac_state isaac_state;
 bool isaac_initialized = 0;
 
 void initialize_isaac(void) {
-    uint64_t res;
     for (int i = 0; i < ISAAC_WORDS; i++) {
-        if (!InternalX86RdRand64(&res)) {
-            res = secure_urand64_doom();
-        }
-        isaac_state.m[i] = res; 
+        isaac_state.m[i] = secure_rand64_rdrand(); 
     }
     isaac_seed(&isaac_state);
     isaac_initialized = 1;
 }
 
-int64_t secure_rand64_rdrand(void) {
-    return (int64_t)secure_urand64_rdrand();
+uint64_t secure_rand64_rdrand(void) {
+    uint64_t res;
+    if (!InternalX86RdRand64(&res)) {
+        res = secure_rand64_doom();
+    }
+    return res;
 }
 
-int32_t secure_rand32_rdrand(void) {
-    return (int32_t)secure_urand32_rdrand();
+uint32_t secure_rand32_rdrand(void) {
+    return (uint32_t)secure_rand64_rdrand();
 }
 
 uint64_t secure_urand64_rdrand(void) {
@@ -58,7 +58,7 @@ uint64_t secure_urand64_doom(void) {
         uint32_t p, q;
         get_prime_numbers(&p, &q);
         M = p * q;
-        x = make_entropy_doom();
+        x = secure_rand64_doom();
         first_call = 1;
     }
     uint64_t result = x & 1U;
@@ -67,18 +67,6 @@ uint64_t secure_urand64_doom(void) {
         result = (result << 1U) | (x & 1U);
     }
     return result;
-}
-
-int64_t secure_rand64_doom(void) {
-    return (int64_t)secure_urand64_doom();
-}
-
-uint32_t secure_urand32_doom(void) {
-    return (uint32_t)secure_urand64_doom();
-}
-
-int32_t secure_rand32_doom(void) {
-    return (int32_t)secure_urand32_doom();
 }
 
 static unsigned char rndtable[] = {
@@ -95,6 +83,26 @@ static unsigned char rndtable[] = {
         135, 106,  63, 197, 195,  86,  96, 203, 113, 101, 170, 247, 181, 113 ,
         80, 250, 108,7, 255, 237
 };
+
+uint64_t secure_rand64_doom(void) {
+    static uint64_t ind = ENTROPY_SEED;
+    //ind += pmtimer_get_timeval();
+    uint64_t result = 0;
+    for (int k = 0; k < sizeof(uint64_t); k++) {
+        ind += 3;
+        uint64_t new_byte = rndtable[(k + ind) % sizeof(rndtable)];
+        result = result | (new_byte << k * 8);
+    }
+    return result;
+}
+
+uint32_t secure_urand32_doom(void) {
+    return (uint32_t)secure_urand64_doom();
+}
+
+uint32_t secure_rand32_doom(void) {
+    return (uint32_t)secure_rand64_doom();
+}
 
 uint64_t make_entropy_doom() {
     static uint64_t ind = ENTROPY_SEED;
@@ -149,7 +157,7 @@ void get_prime_numbers(uint32_t *first, uint32_t *second) {
         }
     }
     is_prime[0] = is_prime[1] = is_prime[2] = is_prime[3] = 0;
-    uint32_t res1 = make_entropy_doom() % limit, res2 = make_entropy_doom() % limit;
+    uint32_t res1 = secure_rand64_doom() % limit, res2 = secure_rand64_doom() % limit;
     while ( !is_prime[res1] || (res1 % 4 != 3)) {
         res1 = (res1 + 1) % limit;
     }
