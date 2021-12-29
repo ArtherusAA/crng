@@ -168,17 +168,19 @@ int mon_crng_test(int argc, char **argv, struct Trapframe *tf) {
         cprintf("Unknown function, terminate testing\n");
         return 1;
     }
-    bool (*test_function[4])(unsigned, unsigned, uint64_t (*)()) = {
+    bool (*test_function[5])(unsigned, unsigned, uint64_t (*)()) = {
         frequency_test,
         frequency_block_test,
         runs_test,
-        longest_run_of_ones_test
+        longest_run_of_ones_test,
+        binary_matrix_rank_test
     };
-    const char *test_function_name[] = {
+    const char *test_function_name[5] = {
         "Frequency test",
         "Frequency block test",
         "Runs test",
-        "Longest run of ones test"
+        "Longest run of ones test",
+        "Binary matrix rank test"
     };
     for (int test_count = 0; test_count < sizeof(test_function) / sizeof(test_function[0]); test_count++) {
         cprintf("-%s:\n--Testing", test_function_name[test_count]);

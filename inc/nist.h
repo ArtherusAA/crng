@@ -27,4 +27,7 @@ bool runs_test(unsigned n, unsigned not_used, uint64_t (*func)());
 //TODO: add n=750.000, M=10.000
 bool longest_run_of_ones_test(unsigned n, unsigned M, uint64_t (*func)());
 
+///The focus of the test is the rank of disjoint sub-matrices of the entire sequence.
+bool binary_matrix_rank_test(unsigned no_used, unsigned not_used, uint64_t (*func)());
+
 #endif // OSCOURSE_NIST_H

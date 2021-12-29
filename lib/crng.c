@@ -53,17 +53,18 @@ uint32_t secure_urand32_rdrand(void) {
 uint64_t secure_urand64_doom(void) {
     static int first_call = 0;
     static uint64_t x = 0;
+    static uint64_t M;
     if (!first_call) {
+        uint32_t p, q;
+        get_prime_numbers(&p, &q);
+        M = p * q;
         x = make_entropy_doom();
         first_call = 1;
     }
-    uint32_t p, q;
-    get_prime_numbers(&p, &q);
-    uint64_t M = p * q;
-    uint64_t result = x & 1;
+    uint64_t result = x & 1U;
     for (int pow = 1; pow < 64; pow++) {
         x = (x * x) % M;
-        result = (result << 1) | (x & 1);
+        result = (result << 1U) | (x & 1U);
     }
     return result;
 }

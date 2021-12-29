@@ -28,7 +28,7 @@
 #include <inc/rand_isaac.h>
 
 #include <limits.h>
-#include <string.h>
+#include <inc/string.h>
 
 
 /* A if 32-bit ISAAC, B if 64-bit.  This is a macro, not an inline

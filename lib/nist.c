@@ -161,3 +161,63 @@ bool longest_run_of_ones_test(unsigned n, unsigned M, uint64_t (*rand_func)()) {
     gamma_func(K / 2., ksi_2 / 2, &res);
     return res > 0.01 ? true : false;
 }
+
+#define matrix_size 32
+uint32_t matrix[matrix_size];
+
+//Check 32x32 matrix's rank
+int matrix_rank(uint64_t (*rand_func)()) {
+    uint64_t sequence = rand_func();;
+    for (int i = 0; i < matrix_size; i++) {
+        if (i % 2 == 0) { //обновляем число каждую вторую итерацию
+            sequence = rand_func();
+        }
+        matrix[i] = (uint32_t)sequence;
+        sequence = sequence >> (int64_size / 2);
+    }
+    for (int row = 0; row < matrix_size; row++) {
+        uint32_t seq = matrix[row], mask = 1 << (int64_size / 2 - 1);
+        int first_one = -1;
+        for (int i = 0; i <= int64_size / 2; i++) {
+            if (seq & mask) {
+                first_one = int64_size / 2 - i;
+                break;
+            }
+            mask = mask >> 1;
+        }
+        mask = 1 << (first_one - 1);
+        for (int inner_row = 0; inner_row < matrix_size; inner_row++) {
+            if ((matrix[inner_row] & mask) && inner_row != row) {
+                uint32_t res = matrix[inner_row] ^ matrix[row]; //xor
+                matrix[inner_row] = res;
+            }
+        }
+    }
+    int rank = 0;
+    for (int row = 0; row < matrix_size; row++) {
+        if (matrix[row]) {
+            rank += 1;
+        }
+    }
+    return rank;
+}
+
+///The focus of the test is the rank of disjoint sub-matrices of the entire sequence.
+bool binary_matrix_rank_test(unsigned no_used, unsigned not_used, uint64_t (*rand_func)()) {
+    unsigned N = 38, F_M = 0, F_M_1 = 0, F_other = 0;
+    for (int i = 0; i < N; i++) {
+        int rank = matrix_rank(rand_func);
+        switch (rank) {
+        case 32: F_M++; break;
+        case 31: F_M_1++; break;
+        default: F_other++;
+        }
+    }
+    double temp1 = F_M - 0.2888 * N, temp2 = F_M_1 - 0.5776 * N, temp3 = F_other - 0.1336 * N;
+    double ksi2 = (temp1 * temp1) / (0.2888 * N) + (temp2 * temp2) / (0.5776 * N) + (temp3 * temp3) / (0.1336 * N);
+
+    double res;
+    gamma_func(1., ksi2 / 2, &res);
+    return res > 0.01 ? true : false;
+}
+#undef matrix_size
