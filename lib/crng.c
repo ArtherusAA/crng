@@ -11,7 +11,6 @@
 
 extern bool InternalX86RdRand32(uint32_t *Rand); 
 extern bool InternalX86RdRand64(uint64_t *Rand);
-uint64_t make_entropy_doom();
 void get_prime_numbers(uint32_t *first, uint32_t *second);
 
 struct isaac_state isaac_state;
@@ -102,18 +101,6 @@ uint32_t secure_urand32_doom(void) {
 
 uint32_t secure_rand32_doom(void) {
     return (uint32_t)secure_rand64_doom();
-}
-
-uint64_t make_entropy_doom() {
-    static uint64_t ind = ENTROPY_SEED;
-    //ind += pmtimer_get_timeval();
-    uint64_t result = 0;
-    for (int k = 0; k < sizeof(uint64_t); k++) {
-        ind += 3;
-        uint64_t new_byte = rndtable[(k + ind) % sizeof(rndtable)];
-        result = result | (new_byte << k * 8);
-    }
-    return result;
 }
 
 unsigned char is_prime[PRIME_SIZE + 1];
