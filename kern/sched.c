@@ -7,6 +7,14 @@
 struct Taskstate cpu_ts;
 _Noreturn void sched_halt(void);
 
+extern volatile uint64_t s_entropy[32];
+extern volatile size_t s_entropy_begin, s_entropy_end;
+
+uint64_t prev_time = 0;
+int measured_tsc = 0;
+
+extern uint64_t InternalRdtsc();
+
 /* Choose a user environment to run and run it */
 _Noreturn void
 sched_yield(void) {
@@ -29,6 +37,20 @@ sched_yield(void) {
     int begin = curenv ? ENVX(curenv->env_id) : 0;
     int index = begin;
     bool found = false;
+    if (s_entropy_begin > 0 || s_entropy_end < 32) {
+        uint64_t cur_tsc = InternalRdtsc();
+        if (measured_tsc == 1) {
+            if (s_entropy_begin > 0) {
+                s_entropy_begin--;
+                s_entropy[s_entropy_begin] = cur_tsc - prev_time;
+            } else {
+                s_entropy[s_entropy_end++] = cur_tsc - prev_time;
+            }
+        }
+        prev_time = cur_tsc;
+        measured_tsc = 1;
+    }
+    
     for (int i = 0; i < NENV; i++) {
         index = (begin + i) % NENV;
         if (envs[index].env_status == ENV_RUNNABLE) {

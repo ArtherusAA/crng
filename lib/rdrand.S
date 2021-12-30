@@ -54,3 +54,9 @@ rn64_ok:
     mov    rax, 1
     ret
 
+global InternalRdtsc
+InternalRdtsc:
+    rdtsc
+    shl rdx, 32
+    or rax, rdx
+    ret
