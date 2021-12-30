@@ -154,8 +154,8 @@ int mon_frequency(int argc, char **argv, struct Trapframe *tf) {
 
 int mon_crng_test(int argc, char **argv, struct Trapframe *tf) {
     uint64_t (*tested_function)() = secure_urand64_rdrand;
-    int tests_size = 100, count = 0;
-    unsigned n = 1000, M = 100;
+    int tests_size = 200, count = 0;
+    unsigned n = 750000, M = 10000;
     if (argc < 2) {
         cprintf("No tested function specified, leave by default: secure_urand64_rdrand\n");
     } else if (!strcmp(argv[1], "rdrand")) {

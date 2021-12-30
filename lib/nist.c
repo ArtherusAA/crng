@@ -101,14 +101,20 @@ bool runs_test(unsigned n, unsigned not_used, uint64_t (*rand_func)()) {
 }
 
 bool longest_run_of_ones_test(unsigned n, unsigned M, uint64_t (*rand_func)()) {
-    unsigned v[] = {0, 0, 0, 0, 0, 0};
-    double probabilities[] = {0.2148, 0.3672, 0.2305, 0.1875, 0, 0};
+    unsigned v[] = {0, 0, 0, 0, 0, 0, 0};
+    double probabilities[] = {0.2148, 0.3672, 0.2305, 0.1875, 0, 0, 0};
     unsigned N = n / M, K = 3;
 
     if (M == 128) {
         K = 5;
         probabilities[0] = 0.1174; probabilities[1] = 0.2430; probabilities[2] = 0.2493;
         probabilities[3] = 0.1752; probabilities[4] = 0.1027; probabilities[5] = 0.1124;
+    }
+    if (M == 10000) {
+        K = 6;
+        probabilities[0] = 0.0882; probabilities[1] = 0.2092; probabilities[2] = 0.2483;
+        probabilities[3] = 0.1933; probabilities[4] = 0.1208; probabilities[5] = 0.0675;
+        probabilities[6] = 0.0727;
     }
 
     for (unsigned block_count = 0; block_count < N; block_count++) {
@@ -140,13 +146,21 @@ bool longest_run_of_ones_test(unsigned n, unsigned M, uint64_t (*rand_func)()) {
             } else {
                 v[max_len - 1] += 1;
             }
-        } else { //M = 128
+        } else if (M == 128){ //M = 128
             if (max_len >= 9) {
                 v[5] += 1;
             } else if (max_len <= 4) {
                 v[0] += 1;
             } else {
                 v[max_len - 4] += 1;
+            }
+        } else { //M = 10000
+            if (max_len >= 16) {
+                v[6] += 1;
+            } else if (max_len <= 10) {
+                v[0] += 1;
+            } else {
+                v[max_len - 10] += 1;
             }
         }
     }
