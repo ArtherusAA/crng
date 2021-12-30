@@ -158,6 +158,7 @@ int mon_crng_test(int argc, char **argv, struct Trapframe *tf) {
     unsigned n = 750000, M = 10000;
     if (argc < 2) {
         cprintf("No tested function specified, leave by default: secure_urand64_rdrand\n");
+        cprintf("Testing CPRNG with hardware entropy(n size: %u, M size: %u):\n", n, M);
     } else if (!strcmp(argv[1], "rdrand")) {
         tested_function = secure_urand64_rdrand;
         cprintf("Testing CPRNG with hardware entropy(n size: %u, M size: %u):\n", n, M);
