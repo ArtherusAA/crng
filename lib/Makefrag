@@ -18,6 +18,10 @@ endif
 LIB_SRCFILES += lib/crng.c
 LIB_SRCFILES += lib/nist.c
 LIB_SRCFILES += lib/math.c
+LIB_SRCFILES += lib/bn.c
+LIB_SRCFILES += lib/curve.c
+LIB_SRCFILES += lib/ecdsa.c
+LIB_SRCFILES += lib/md5.c
 
 LIB_SRCFILES += lib/rand_isaac.c
 

@@ -9,6 +9,7 @@
 #include <inc/x86.h>
 #include <inc/crng.h>
 #include <inc/nist.h>
+#include <inc/ecdsa.h>
 
 #include <kern/console.h>
 #include <kern/monitor.h>
@@ -22,6 +23,8 @@
 
 #define WHITESPACE "\t\r\n "
 #define MAXARGS    16
+
+extern curve p_192;
 
 /* Functions implementing monitor commands */
 int mon_help(int argc, char **argv, struct Trapframe *tf);
@@ -37,6 +40,7 @@ int mon_virt(int argc, char **argv, struct Trapframe *tf);
 int mon_crng(int argc, char **argv, struct Trapframe *tf);
 int mon_crng_doom(int argc, char **argv, struct Trapframe *tf);
 int mon_crng_test(int argc, char **argv, struct Trapframe *tf);
+int mon_ecdsa_test(int argc, char **argv, struct Trapframe *tf);
 
 struct Command {
     const char *name;
@@ -58,7 +62,8 @@ static struct Command commands[] = {
         {"page_table", "Dump page table", mon_pagetable},
         {"crng", "Print random unsinged integer", mon_crng},
         {"crng_doom", "Print pseudo-random unsinged integer", mon_crng_doom},
-        {"crng_test", "Test crng", mon_crng_test}
+        {"crng_test", "Test crng", mon_crng_test},
+        {"ecdsa_test", "Test ecdsa", mon_ecdsa_test}
 };
 #define NCOMMANDS (sizeof(commands) / sizeof(commands[0]))
 
@@ -195,6 +200,74 @@ int mon_crng_test(int argc, char **argv, struct Trapframe *tf) {
         }
         cprintf("OK\n--Result: %d/%d tests passed\n", count, tests_size);
         count = 0;
+    }
+    return 0;
+}
+
+int
+mon_ecdsa_test(int argc, char **argv, struct Trapframe *tf) {
+    bignum z; //hash
+    char hash[HASHSIZE];
+    if (argc < 2) {
+        cprintf("no string\n");
+        return 1;
+    }
+    static unsigned char modified_message[1024];
+    char *message = argv[1];
+    int len = strlen(message);
+    md5(message, len, hash);
+    convert_from_md5_to_bignum(&z, hash);
+
+    point HA;
+    bignum k, s, r, dA;
+    bignum_from_int(&k, 7);
+    bignum_from_int(&dA, 11);
+
+    ecdsa_sign(&p_192, &z, &dA, &r, &s);
+    ecdsa_public_key(&dA, &p_192, &HA);
+
+    int result = ecdsa_verify(&z, &r, &s, &p_192, &HA);
+
+    cprintf("Check signature test: ");
+    if (result == 1)
+    {
+        cprintf("OK\n");
+    }
+    else {
+        cprintf("not OK\n");
+    }
+
+    point modified_HA;
+    bignum_copy(&modified_HA.x, &HA.x);
+    bignum_copy(&modified_HA.y, &HA.y);
+    modified_HA.zero_flag = 0;
+    bignum_inc(&modified_HA.x);
+
+    result = ecdsa_verify(&z, &r, &s, &p_192, &modified_HA);
+
+    cprintf("Check fake public key test: ");
+    if (result == 0)
+    {
+        cprintf("OK\n");
+    }
+    else {
+        cprintf("not OK\n");
+    }
+
+    strncpy((char*)modified_message, message, len);
+    modified_message[0] ^= 1U;
+    md5((char*)modified_message, len, hash);
+    convert_from_md5_to_bignum(&z, hash);
+
+    result = ecdsa_verify(&z, &r, &s, &p_192, &modified_HA);
+
+    cprintf("Check wrong message test: ");
+    if (result == 0)
+    {
+        cprintf("OK\n");
+    }
+    else {
+        cprintf("not OK\n");
     }
     return 0;
 }
