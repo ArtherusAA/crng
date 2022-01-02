@@ -20,7 +20,7 @@ There may well be room for performance-optimizations and improvements.
 
 #include <inc/stdio.h>
 #include <inc/bn.h>
-
+#include <inc/string.h>
 
 
 /* Functions for shifting number in-place. */
@@ -747,10 +747,11 @@ void bignum_mul_mod(bignum* a, bignum* b, bignum* c, bignum* n) {
 
 
 void convert_from_md5_to_bignum(bignum* dst, const char* src){
-    uint32_t a1 = *((uint32_t*)src);
-    uint32_t a2 = *((uint32_t*)src + 1);
-    uint32_t a3 = *((uint32_t*)src + 2);
-    uint32_t a4 = *((uint32_t*)src + 3);
+    uint32_t a1, a2, a3, a4;
+    memcpy((void*)(&a1), (void*)(src),                        sizeof(uint32_t));
+    memcpy((void*)(&a2), (void*)(src +     sizeof(uint32_t)), sizeof(uint32_t));
+    memcpy((void*)(&a3), (void*)(src + 2 * sizeof(uint32_t)), sizeof(uint32_t));
+    memcpy((void*)(&a4), (void*)(src + 3 * sizeof(uint32_t)), sizeof(uint32_t));
     bignum_from_int(dst, 0);
     dst->array[0] = a1;
     dst->array[1] = a2;
