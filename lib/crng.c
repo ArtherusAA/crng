@@ -5,6 +5,7 @@
 #include <stdint.h>
 #include <inc/rand_isaac.h>
 #include <inc/crng.h>
+#include <inc/x86.h>
 
 #define PRIME_SIZE 1000000
 
@@ -29,8 +30,12 @@ void initialize_isaac(void) {
 
 uint64_t secure_rand64_rdrand(void) {
     uint64_t res;
-    if (!InternalX86RdRand64(&res)) {
-        res = secure_rand64_doom();
+    uint32_t rdrand_enabled;
+    cpuid(0, NULL, NULL, &rdrand_enabled, NULL);
+    rdrand_enabled >>= 29u;
+    rdrand_enabled &= 1u;
+    if (!rdrand_enabled || !InternalX86RdRand64(&res)) {
+        res = secure_urand64_doom();
     }
     return res;
 }
@@ -72,12 +77,11 @@ uint64_t secure_urand64_doom(void) {
 }
 
 uint64_t secure_rand64_doom(void) {
-    static int iter = 0;
     uint64_t res = 0;
+    while (s_entropy_end - s_entropy_begin < 8) {}
     for (int i = 0; i < 8; i++) {
         res <<= 8;
-        res += s_entropy[iter++] % 256u;
-        iter %= 32;
+        res += s_entropy[s_entropy_begin++] % 256u;
     }
     return res;
 }
