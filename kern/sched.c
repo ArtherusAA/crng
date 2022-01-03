@@ -41,8 +41,8 @@ sched_yield(void) {
         uint64_t cur_tsc = InternalRdtsc();
         if (measured_tsc == 1) {
             if (s_entropy_begin > 0) {
+                s_entropy[s_entropy_begin - 1] = cur_tsc - prev_time;
                 s_entropy_begin--;
-                s_entropy[s_entropy_begin] = cur_tsc - prev_time;
             } else {
                 s_entropy[s_entropy_end++] = cur_tsc - prev_time;
             }
