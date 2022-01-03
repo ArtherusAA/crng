@@ -27,11 +27,17 @@ void initialize_isaac(void) {
 uint64_t secure_rand64_rdrand(void) {
     uint64_t res;
     uint32_t rdrand_enabled;
+    static bool first_call = true;
     cpuid(0, NULL, NULL, &rdrand_enabled, NULL);
     rdrand_enabled >>= 29u;
     rdrand_enabled &= 1u;
     if (!rdrand_enabled || !InternalX86RdRand64(&res)) {
-        res = secure_urand64_doom();
+        if (first_call) {
+            res = secure_rand64_doom();
+            first_call = false;
+        } else {
+            res = secure_urand64_doom();
+        }
     }
     return res;
 }
@@ -73,10 +79,10 @@ uint64_t secure_urand64_doom(void) {
 
 uint64_t secure_rand64_doom(void) {
     uint64_t res = 0;
-    while (s_entropy_end - s_entropy_begin < 8) {}
-    for (int i = 0; i < 8; i++) {
-        res <<= 8;
-        res += s_entropy[s_entropy_begin++] % 256u;
+    while (s_entropy_end - s_entropy_begin < 16) {}
+    for (int i = 0; i < 16; i++) {
+        res <<= 4;
+        res += s_entropy[s_entropy_begin++] % 16u;
     }
     return res;
 }
