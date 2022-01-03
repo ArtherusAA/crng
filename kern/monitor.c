@@ -41,6 +41,8 @@ int mon_crng(int argc, char **argv, struct Trapframe *tf);
 int mon_crng_doom(int argc, char **argv, struct Trapframe *tf);
 int mon_crng_test(int argc, char **argv, struct Trapframe *tf);
 int mon_ecdsa_test(int argc, char **argv, struct Trapframe *tf);
+int mon_make_random(int argc, char **argv, struct Trapframe *tf);
+int mon_crng_test_restart(int argc, char **argv, struct Trapframe *tf);
 
 struct Command {
     const char *name;
@@ -63,7 +65,9 @@ static struct Command commands[] = {
         {"crng", "Print random unsinged integer", mon_crng},
         {"crng_doom", "Print pseudo-random unsinged integer", mon_crng_doom},
         {"crng_test", "Test crng", mon_crng_test},
-        {"ecdsa_test", "Test ecdsa", mon_ecdsa_test}
+        {"ecdsa_test", "Test ecdsa", mon_ecdsa_test},
+        {"make_random", "Get 49 nums", mon_make_random},
+        {"mon_crng_test_restart", "Restast system test", mon_crng_test_restart}
 };
 #define NCOMMANDS (sizeof(commands) / sizeof(commands[0]))
 
@@ -154,6 +158,62 @@ int mon_frequency(int argc, char **argv, struct Trapframe *tf) {
         return 1;
     }
     timer_cpu_frequency(argv[1]);
+    return 0;
+}
+#define ARR_SIZE 49
+uint64_t array_bit[ARR_SIZE] = {
+        7758009469335828507U, 13631049376499996469U, 15133371986221127299U, 15884290351485006874U, 7205136481508797045U, 15373736886708605711U, 13199040685379227341U, 12591886695813637759U, 10060221393603903560U, 5069412645881918541U, 9618925322334256823U, 13852405816680089574U, 2271977797365432036U, 4939868312260267525U, 14504524307946026188U, 1278967974230129688U, 2897153206126835663U, 16830047472954026156U, 1090274136934705798U, 4161223489666465762U, 8456213504140876497U, 10867197544530046607U, 15166560912601751289U, 10310361400896345996U, 7120277469587465615U, 10924836254323343142U, 54252935294508339U, 10255135775012304249U, 15953154751981119090U, 4140572782758901945U, 16403233701717785974U, 4629864648531268557U, 15435697637544659120U, 8601857239147050726U, 2754099672879608212U, 2822121605737856593U, 17450751922249543092U, 7399261821876467279U, 17466683851252441689U, 10152333219958902351U, 14198559117989152662U, 7321265988516694622U, 7907336853115624791U, 12580530574818782861U, 12698221345205622959U, 18321548971909841683U, 15013427019797957578U, 6955294916018157332U, 965053214786718676U};
+size_t iter = 0;
+
+uint64_t make_random() {
+    if (iter < ARR_SIZE) {
+        return array_bit[iter++];
+    } else {
+        uint64_t res = secure_urand64_doom();
+        return res;
+    }
+}
+
+int mon_crng_test_restart(int argc, char **argv, struct Trapframe *tf) {
+    uint64_t (*tested_function)() = make_random;
+    int tests_size = 1, count = 0;
+    unsigned n = 6272, M = 128;
+    bool (*test_function[5])(unsigned, unsigned, uint64_t (*)()) = {
+            frequency_test,
+            frequency_block_test,
+            runs_test,
+            longest_run_of_ones_test,
+            binary_matrix_rank_test
+    };
+    const char *test_function_name[5] = {
+            "Frequency test",
+            "Frequency block test",
+            "Runs test",
+            "Longest run of ones test",
+            "Binary matrix rank test"
+    };
+    for (int test_count = 0; test_count < sizeof(test_function) / sizeof(test_function[0]); test_count++) {
+        cprintf("-%s:\n--Testing", test_function_name[test_count]);
+        for (int i = 1; i <= tests_size; i++) {
+            if (test_function[test_count](n, M, tested_function)) {
+                count += 1;
+            }
+            /*if (i % (tests_size / 10) == 0) {
+                cprintf(".");
+            }*/
+        }
+        cprintf("OK\n--Result: %d/%d tests passed\n", count, tests_size);
+        count = 0;
+    }
+    return 0;
+}
+
+int mon_make_random(int argc, char **argv, struct Trapframe *tf) {
+    for (int i = 0; i < ARR_SIZE; i++) {
+        uint64_t num = secure_urand64_doom();
+        cprintf("%luU, ", num);
+    }
+    cprintf("\n");
     return 0;
 }
 
